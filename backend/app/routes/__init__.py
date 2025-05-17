@@ -6,6 +6,8 @@ import uuid
 import jwt
 import os
 from datetime import datetime, timedelta
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
 api = Blueprint('api', __name__, url_prefix='/api')
 
@@ -83,23 +85,57 @@ def login():
 
 @api.route('/auth/verify', methods=['GET'])
 def verify_login():
-    token = request.args.get('token')
-    email = request.args.get('email')
-    
-    if not token or not email:
-        return jsonify({'error': 'Invalid login link'}), 400
-    
-    user = User.query.filter_by(email=email).first()
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-    
-    if user.verify_token(token):
-        return jsonify({
-            'isAdmin': user.is_admin,
-            'user': user.to_dict()
-        })
-    
-    return jsonify({'error': 'Invalid or expired login link'}), 401
+    try:
+        # Try to get token from query parameters first
+        token = request.args.get('token')
+        email = request.args.get('email')
+        
+        # If not in query params, try Bearer token
+        if not token:
+            auth_header = request.headers.get('Authorization')
+            if auth_header and auth_header.startswith('Bearer '):
+                token = auth_header.split(' ')[1]
+                try:
+                    # Decode the token to get the user_id
+                    payload = jwt.decode(
+                        token,
+                        os.getenv('SECRET_KEY', 'default-secret-key'),
+                        algorithms=['HS256']
+                    )
+                    user = User.query.get(payload['user_id'])
+                    if user:
+                        return jsonify({
+                            'isAdmin': user.is_admin,
+                            'user': user.to_dict()
+                        })
+                    return jsonify({'error': 'User not found'}), 404
+                except jwt.ExpiredSignatureError:
+                    return jsonify({'error': 'Token has expired'}), 401
+                except jwt.InvalidTokenError:
+                    return jsonify({'error': 'Invalid token'}), 401
+        
+        # Handle email-based verification
+        if token and email:
+            user = User.query.filter_by(email=email).first()
+            if not user:
+                return jsonify({'error': 'User not found'}), 404
+            
+            try:
+                if user.verify_token(token):
+                    return jsonify({
+                        'isAdmin': user.is_admin,
+                        'user': user.to_dict()
+                    })
+                return jsonify({'error': 'Invalid or expired token'}), 401
+            except Exception as e:
+                print(f"Token verification error: {str(e)}")
+                return jsonify({'error': 'Token verification failed'}), 401
+        
+        return jsonify({'error': 'Invalid or missing credentials'}), 401
+        
+    except Exception as e:
+        print(f"Verification error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
 
 @api.route('/users', methods=['GET'])
 def get_users():
@@ -171,13 +207,16 @@ def import_users():
         payload = jwt.decode(token, os.getenv('SECRET_KEY', 'default-secret-key'), algorithms=['HS256'])
         current_user = User.query.get(payload['user_id'])
         
-        # Check if user is admin
-        if not current_user or not current_user.is_admin:
-            return jsonify({'error': 'Unauthorized - Admin access required'}), 403
+        if not current_user:
+            return jsonify({'error': 'User not found'}), 404
 
         data = request.json.get('data', [])
         if not data:
             return jsonify({'error': 'No data provided'}), 400
+
+        # For non-admin users, limit the number of users they can import
+        if not current_user.is_admin and len(data) > 10:
+            return jsonify({'error': 'Non-admin users can only import up to 10 users at a time'}), 403
 
         new_users = []
         errors = []
@@ -200,10 +239,13 @@ def import_users():
             tags = []
             if user_data.get('tags'):
                 if isinstance(user_data['tags'], str):
-                    tags = [tag.strip() for tag in user_data['tags'].split(',')]
+                    tags = [tag.strip() for tag in user_data['tags'].split(';') if tag.strip()]
                 elif isinstance(user_data['tags'], list):
                     tags = [tag.strip() for tag in user_data['tags']]
 
+            # For non-admin users, set some default values and restrictions
+            is_admin = current_user.is_admin and user_data.get('is_admin', False)
+            
             # Create new user
             try:
                 user = User(
@@ -214,7 +256,8 @@ def import_users():
                     tags=tags,
                     team=user_data.get('team', ''),
                     links=user_data.get('links', {}),
-                    is_active=True
+                    is_active=True,
+                    is_admin=is_admin
                 )
                 db.session.add(user)
                 new_users.append(user)
@@ -263,3 +306,129 @@ def get_tags():
     except Exception as e:
         print(f"Error fetching tags: {str(e)}")
         return jsonify({'error': 'Failed to fetch tags'}), 500 
+
+@api.route('/auth/google', methods=['POST'])
+def google_auth():
+    try:
+        # Get the token from the request
+        credential = request.json.get('credential')
+        if not credential:
+            return jsonify({'error': 'No credential provided'}), 400
+
+        # Verify the token
+        client_id = os.getenv('GOOGLE_CLIENT_ID')
+        idinfo = id_token.verify_oauth2_token(credential, requests.Request(), client_id)
+
+        # Get user info from the token
+        email = idinfo['email']
+        name = idinfo.get('name', '')
+
+        # Find or create user
+        user = User.query.filter_by(email=email).first()
+        if not user:
+            # Create new user
+            user = User(
+                id=str(uuid.uuid4()),
+                email=email,
+                name=name,
+                is_active=True
+            )
+            db.session.add(user)
+            db.session.commit()
+
+        # Generate JWT token
+        token = generate_token(user.id)
+        
+        return jsonify({
+            'token': token,
+            'user': user.to_dict()
+        })
+
+    except ValueError as e:
+        # Invalid token
+        return jsonify({'error': 'Invalid token'}), 401
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500 
+
+@api.route('/users/delete', methods=['POST'])
+def delete_users():
+    # Get the current user from the token
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return jsonify({'error': 'Authorization required'}), 401
+    
+    try:
+        token = auth_header.split(' ')[1]
+        payload = jwt.decode(token, os.getenv('SECRET_KEY', 'default-secret-key'), algorithms=['HS256'])
+        current_user = User.query.get(payload['user_id'])
+        
+        if not current_user:
+            return jsonify({'error': 'User not found'}), 404
+
+        # Get user IDs to delete from request
+        user_ids = request.json.get('userIds', [])
+        if not user_ids:
+            return jsonify({'error': 'No user IDs provided'}), 400
+
+        # For non-admin users, add safety checks
+        if not current_user.is_admin:
+            # Non-admin users can only delete themselves
+            if len(user_ids) > 1 or current_user.id not in user_ids:
+                return jsonify({'error': 'Unauthorized to delete other users'}), 403
+
+        deleted_count = 0
+        errors = []
+        
+        for user_id in user_ids:
+            try:
+                user = User.query.get(user_id)
+                if user:
+                    # Prevent deletion of admin users by non-admins
+                    if user.is_admin and not current_user.is_admin:
+                        errors.append(f'Cannot delete admin user: {user.email}')
+                        continue
+                    
+                    db.session.delete(user)
+                    deleted_count += 1
+                else:
+                    errors.append(f'User not found: {user_id}')
+            except Exception as e:
+                errors.append(f'Error deleting user {user_id}: {str(e)}')
+
+        try:
+            db.session.commit()
+            return jsonify({
+                'deleted': deleted_count,
+                'errors': errors if errors else None
+            }), 200 if not errors else 207
+        except Exception as e:
+            db.session.rollback()
+            return jsonify({
+                'error': 'Database error while deleting users',
+                'details': str(e)
+            }), 500
+
+    except jwt.ExpiredSignatureError:
+        return jsonify({'error': 'Token has expired'}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({'error': 'Invalid token'}), 401
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400 
+
+@api.route('/users/<user_id>/toggle-admin', methods=['POST'])
+def toggle_admin(user_id):
+    # Only allow this in development environment
+    if os.getenv('FLASK_ENV') != 'development':
+        return jsonify({'error': 'This endpoint is only available in development mode'}), 403
+    
+    try:
+        user = User.query.get_or_404(user_id)
+        user.is_admin = not user.is_admin
+        db.session.commit()
+        return jsonify({
+            'message': f'Admin status toggled. User is {"now" if user.is_admin else "no longer"} an admin',
+            'isAdmin': user.is_admin
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 400 

@@ -1,0 +1,4 @@
+email,name,description,tags,team,available_days,links
+james.cloud@exampe.com,James Wilson,Cloud Architecture Specialist,aws;kubernetes;docker;terraform,DevOps,wednesday;thursday,{"github": "https://github.com/jwilson-cloud", "linkedin": "https://linkedin.com/in/jameswilson"}
+nina.data@exampe.com,Nina Patel,Data Scientist with focus on NLP,python;nlp;machine-learning;scikit-learn,Data Science,monday;tuesday,{"github": "https://github.com/nina-nlp", "linkedin": "https://linkedin.com/in/ninapatel"}
+david.sec@exampe.com,David Kim,Security Engineer & Penetration Tester,security;pentesting;python;networking,Security,thursday;friday,{"github": "https://github.com/davidkim-sec", "linkedin": "https://linkedin.com/in/davidkimsec"}
