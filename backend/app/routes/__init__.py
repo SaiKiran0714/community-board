@@ -176,7 +176,7 @@ def update_user(user_id):
             if field in data:
                 # Convert camelCase to snake_case for some fields
                 if field == 'is_active':
-                    setattr(user, field, data.get('isActive'))
+                    user.is_active = data.get('isActive', True)  # Default to True if not specified
                 elif field == 'available_days':
                     setattr(user, field, data.get('availableDays'))
                 elif field == 'avatar_url':

@@ -71,8 +71,38 @@ def create_app():
                     'is_admin': True,
                     'tags': ['admin', 'tech', 'management'],
                     'team': 'IT',
-                    'available_days': ['monday', 'wednesday', 'friday'],
+                    'available_days': ['friday', 'saturday'],
                     'links': {'github': 'https://github.com/admin', 'linkedin': 'https://linkedin.com/in/admin'}
+                },
+                {
+                    'id': str(uuid.uuid4()),
+                    'email': 'weekend.dev@example.com',
+                    'name': 'Sarah Weekend',
+                    'description': 'Full-stack developer who prefers weekend work',
+                    'tags': ['react', 'node.js', 'weekend-warrior', 'remote'],
+                    'team': 'Full Stack',
+                    'available_days': ['saturday'],
+                    'links': {'github': 'https://github.com/sarahw', 'linkedin': 'https://linkedin.com/in/sarahw'}
+                },
+                {
+                    'id': str(uuid.uuid4()),
+                    'email': 'flexible.time@example.com',
+                    'name': 'Alex Flexible',
+                    'description': 'UI/UX designer with flexible schedule',
+                    'tags': ['ui', 'ux', 'figma', 'design-systems', 'flexible'],
+                    'team': 'Design',
+                    'available_days': ['friday', 'saturday'],
+                    'links': {'github': 'https://github.com/alexf', 'portfolio': 'https://alexf.design'}
+                },
+                {
+                    'id': str(uuid.uuid4()),
+                    'email': 'night.owl@example.com',
+                    'name': 'Oliver Night',
+                    'description': 'Backend developer who loves working weekends',
+                    'tags': ['python', 'django', 'postgresql', 'night-shift'],
+                    'team': 'Backend',
+                    'available_days': ['saturday'],
+                    'links': {'github': 'https://github.com/olivern', 'linkedin': 'https://linkedin.com/in/olivern'}
                 },
                 {
                     'id': str(uuid.uuid4()),

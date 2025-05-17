@@ -1,4 +1,7 @@
-email,name,description,tags,team,available_days,links
-james.cloud@exampe.com,James Wilson,Cloud Architecture Specialist,aws;kubernetes;docker;terraform,DevOps,wednesday;thursday,{"github": "https://github.com/jwilson-cloud", "linkedin": "https://linkedin.com/in/jameswilson"}
-nina.data@exampe.com,Nina Patel,Data Scientist with focus on NLP,python;nlp;machine-learning;scikit-learn,Data Science,monday;tuesday,{"github": "https://github.com/nina-nlp", "linkedin": "https://linkedin.com/in/ninapatel"}
-david.sec@exampe.com,David Kim,Security Engineer & Penetration Tester,security;pentesting;python;networking,Security,thursday;friday,{"github": "https://github.com/davidkim-sec", "linkedin": "https://linkedin.com/in/davidkimsec"}
+email,name,description,tags,team,available_days,links,
+alina.cloud@exampe.com,Alina Morris,Cloud Infrastructure Engineer,azure;docker;kubernetes;terraform,DevOps,monday;friday,"{""github"": ""https://github.com/alinam-cloud"""," ""linkedin"": ""https://linkedin.com/in/alinamorris""}"
+ryan.data@exampe.com,Ryan Delgado,Machine Learning Researcher,python;deep-learning;nlp;pytorch,Data Science,tuesday;wednesday,"{""github"": ""https://github.com/ryandel-ml"""," ""linkedin"": ""https://linkedin.com/in/ryandelgado""}"
+meera.sec@exampe.com,Meera Iyer,Cybersecurity Analyst,security;incident-response;python;linux,Security,monday;thursday,"{""github"": ""https://github.com/meerai-sec"""," ""linkedin"": ""https://linkedin.com/in/meeraiyer""}"
+leo.arch@exampe.com,Leo Varga,Systems Architect,gcp;ansible;docker;cloud-design,DevOps,tuesday;thursday,"{""github"": ""https://github.com/leovarga-arch"""," ""linkedin"": ""https://linkedin.com/in/leovarga""}"
+sophia.ai@exampe.com,Sophia Bennett,AI/ML Engineer,python;machine-learning;transformers;huggingface,Data Science,wednesday;friday,"{""github"": ""https://github.com/sophiab-ai"""," ""linkedin"": ""https://linkedin.com/in/sophiabennett""}"
+raj.cyber@exampe.com,Raj Malhotra,Offensive Security Expert,penetration-testing;ethical-hacking;burpsuite;nmap,Security,tuesday;friday,"{""github"": ""https://github.com/rajm-sec"""," ""linkedin"": ""https://linkedin.com/in/rajmalhotra""}"
