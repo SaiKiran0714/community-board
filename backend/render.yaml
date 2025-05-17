@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: community-board-backend
+    env: python
+    rootDir: backend  # Specify the root directory
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn -c gunicorn_config.py wsgi:app
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: DATABASE_URL
+        sync: false # Will be automatically added by Render PostgreSQL
+      - key: SECRET_KEY
+        generateValue: true
+    autoDeploy: true 
