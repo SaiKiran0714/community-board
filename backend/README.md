@@ -1,108 +1,94 @@
 # Community Board Backend
 
-This is the backend server for the Community Board application, built with Flask and SQLite for development.
+This is the backend server for the Community Board application, built with Flask and SQLite.
 
-## Tech Stack
+## Features
 
-- **Framework**: Flask 3.0.0
-- **Database**: SQLite (Development), PostgreSQL (Production)
-- **ORM**: SQLAlchemy 2.0.23
-- **Authentication**: JWT-based email authentication
-- **Email Service**: Flask-Mail
-- **API Documentation**: Coming soon
+- **User Authentication**: Google OAuth 2.0 integration for secure login
+- **User Management**: CRUD operations for user profiles
+- **Admin Controls**: Special privileges for admin users
+- **Data Import**: Support for CSV import of user data
+- **API Endpoints**: RESTful API endpoints for all operations
 
-## Prerequisites
+## Setup Instructions
 
-- Python 3.9+
+### Prerequisites
+- Python 3.8 or higher
 - pip (Python package manager)
 
-## Setup
+### Installation
 
-1. Clone the repository and navigate to the backend directory:
+1. Clone the repository
 ```bash
-cd backend
+git clone https://github.com/SaiKiran0714/community-board.git
+cd community-board/backend
 ```
 
-2. Create a virtual environment (recommended):
+2. Create a virtual environment
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install dependencies:
+3. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Create a `.env` file in the backend directory with the following variables:
-```env
-FLASK_ENV=development
-SECRET_KEY=your-secret-key
-MAIL_SERVER=smtp.gmail.com
-MAIL_PORT=587
-MAIL_USE_TLS=True
-MAIL_USERNAME=your-email@gmail.com
-MAIL_PASSWORD=your-app-password
-MAIL_DEFAULT_SENDER=your-email@gmail.com
+### Google OAuth Setup
+
+1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the OAuth 2.0 API
+4. Configure the OAuth consent screen
+5. Create OAuth 2.0 Client credentials
+6. Add authorized redirect URIs:
+   - `http://localhost:3000/callback` (for development)
+
+### Environment Variables
+
+Create a `.env` file in the backend directory with the following variables:
+```
+GOOGLE_CLIENT_ID=your_client_id_here
+GOOGLE_CLIENT_SECRET=your_client_secret_here
+GOOGLE_DISCOVERY_URL=https://accounts.google.com/.well-known/openid-configuration
+GOOGLE_REDIRECT_URI=http://localhost:3000/callback
 ```
 
-## Database
+### Running the Server
 
-- Development: SQLite database (`instance/community.db`)
-- Production: PostgreSQL (configured via `DATABASE_URL` environment variable)
-- The database schema is managed through SQLAlchemy models
-- Initial migrations are handled automatically
-- Sample data is populated on first run
-
-## Running the Server
-
-Development mode with auto-reload:
+1. Start the Flask server:
 ```bash
-python run.py
+python -m flask run
 ```
-
-Or using Flask CLI:
-```bash
-flask run
-```
-
-The server will start at `http://127.0.0.1:5000`
+The server will start at `http://localhost:5000`
 
 ## API Endpoints
 
-- `GET /api/users` - Get all users
-- `POST /api/users/import` - Import users from CSV
-- `POST /api/auth/login` - Email-based authentication
-- `GET /api/auth/verify` - Verify authentication token
-- More endpoints documentation coming soon
+### Authentication
+- `POST /api/auth/login`: Initiate Google OAuth login
+- `GET /api/auth/verify`: Verify user authentication
 
-## Scripts
+### Users
+- `GET /api/users`: Get all users
+- `GET /api/users/<id>`: Get specific user
+- `PUT /api/users/<id>`: Update user profile
+- `POST /api/users/delete`: Delete user(s)
+- `POST /api/users/import`: Import users from CSV
 
-The `scripts` directory contains utility scripts:
-- `create_admin.py` - Create an admin user
-- `import_users.py` - Bulk import users from CSV
-- `add_saturday_users.py` - Add sample users with Saturday availability
+### Admin Operations
+- `POST /api/users/<id>/toggle-admin`: Toggle admin status
 
-## Development
+## Database
 
-1. The application uses SQLite for development, which requires no additional setup
-2. Debug mode is enabled in development for detailed error messages
-3. Email sending is suppressed in development by default
+The application uses SQLite database (community.db) with the following main tables:
+- Users: Stores user profiles and authentication details
+- Links: Stores user's social media links
+- Tags: Stores user skills and interests
 
-## Production Deployment
+## Security Features
 
-For production:
-1. Set `FLASK_ENV=production`
-2. Configure `DATABASE_URL` for PostgreSQL
-3. Set up proper email credentials
-4. Use a production WSGI server (e.g., Gunicorn)
-
-## Contributing
-
-1. Create a new branch for your feature
-2. Make your changes
-3. Submit a pull request
-
-## License
-
-MIT License 
+- OAuth 2.0 authentication
+- JWT token-based session management
+- Password-less authentication
+- Admin role protection for sensitive operations 
