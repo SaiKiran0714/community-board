@@ -90,4 +90,4 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 - Thanks to all contributors
 - Special thanks to the community members
-- Built during the Community Hackathon 2024 
+- Built during the Bayerwald Hackathon 2025 - Deggendorf 
