@@ -3,9 +3,9 @@
 A full-stack web application for managing and connecting community members, built with Next.js, TypeScript, Flask, and SQLite.
 
 Team members: 
-Sai Kiran Pulickal Babujith
-Aswathi Chittiyam Veettil Thankan
-Karan Sharma
+-Sai Kiran Pulickal Babujith
+-Aswathi Chittiyam Veettil Thankan
+-Karan Sharma
 
 ![Community Board Banner](./docs/banner.png)
 
