@@ -76,16 +76,6 @@ cd community-board
    - Backend will run on `http://localhost:5000`
    - Frontend will run on `http://localhost:3000`
 
-## Screenshots
-
-### Home Page
-![Home Page](./docs/home.png)
-
-### Profile Management
-![Profile Page](./docs/profile.png)
-
-### Admin Dashboard
-![Admin Dashboard](./docs/admin.png)
 
 ## Contributing
 
